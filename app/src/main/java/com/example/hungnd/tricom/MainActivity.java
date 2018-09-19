@@ -9,8 +9,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tokenTv;
     Button btn, get;
     EditText username, password, url;
+    Spinner dropdown;
     private String token = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +121,8 @@ public class MainActivity extends AppCompatActivity {
                 get(HOST + url.getText().toString());
             }
         });
-
+        //get the spinner from the xml.
+        dropdown = findViewById(R.id.spinner);
     }
 
     @Override
@@ -264,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 JSONArray array = new JSONArray();
                 try {
-
+                    final HashMap<Object, Object> bashos = new HashMap<>();
                     JSONObject mainObject = new JSONObject(response);
                     array = mainObject.getJSONArray("bashos");
 //                    textView.append(String.valueOf(array.length()) + "\n");
@@ -274,8 +279,28 @@ public class MainActivity extends AppCompatActivity {
                         String code = row.getString("場所コード");
                         String name = row.getString("場所名");
                         textView.append(code + name + "\n");
-
+                        bashos.put(name, code);
                     }
+                    //create a list of items for the spinner.
+                    String[] items = new String[]{"1", "2", "three"};
+                    //create an adapter to describe how the items are displayed, adapters are used in several places in android.
+                    //There are multiple variations of this, but this is the basic variant.
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, bashos.keySet().toArray(new String[bashos.size()]));
+                    //set the spinners adapter to the previously created one.
+                    dropdown.setAdapter(adapter);
+                    dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> parent, View view,
+                                                   int position, long id) {
+//                            Log.v("item", (String) parent.getItemAtPosition(position));
+                            Toast.makeText(getApplicationContext(), "You have Chosen :"+bashos.get(parent.getItemAtPosition(position)), Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onNothingSelected(AdapterView<?> parent) {
+                            // TODO Auto-generated method stub
+                        }
+                    });
 
                 } catch (JSONException e) {
                     e.printStackTrace();
