@@ -7,9 +7,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -20,7 +20,6 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.VolleyError;
-import com.google.gson.JsonArray;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,55 +30,59 @@ import java.util.HashMap;
 import io.gloxey.gnm.interfaces.VolleyResponse;
 import io.gloxey.gnm.managers.ConnectionManager;
 
-public class MainActivity extends AppCompatActivity {
+public class EventActivity extends AppCompatActivity {
     public static final String HOST = "http://103.63.109.157";
-    public static final String LOGIN_POST = HOST + "/login";
-    Button btn;
-    EditText username, password;
+    Button buttonSearchBasho;
+    EditText editTextBasho;
+    TextView textView;
+    private String auth_token = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.create_event);
 
-        btn = (Button) findViewById(R.id.button);
-        username = (EditText) findViewById(R.id.username);
-        password = (EditText) findViewById(R.id.password);
-        username.setText("");
-        password.setText("");
-        btn.setOnClickListener(new Button.OnClickListener(){
+        Intent intent = getIntent();
+        auth_token = intent.getStringExtra("auth_token"); //if it's a string you stored.
+        editTextBasho = (EditText) findViewById(R.id.editTextBasho);
+        buttonSearchBasho = (Button) findViewById(R.id.buttonSearchBasho);
+        textView = (TextView) findViewById(R.id.textView2);
+
+        buttonSearchBasho.setOnClickListener(new Button.OnClickListener(){
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
-                login(username.getText().toString(),password.getText().toString());
+                get(HOST + editTextBasho.getText().toString());
             }
         });
     }
 
-    private boolean login(String username, String password){
+    private boolean get(String url){
         HashMap<String, String> headers = new HashMap<String, String>();
         headers.put("Accept","application/json");
         headers.put("Content-Type","application/json");
         headers.put("Connect-Type","api");
+        headers.put("Authorization", auth_token);
 
         JSONObject jsonParams = new JSONObject();
-        try {
-            jsonParams.put("担当者コード", username);
-            jsonParams.put("password", password);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
-        ConnectionManager.volleyJSONRequest(this, true, null, LOGIN_POST, Request.Method.POST, jsonParams, headers, new VolleyResponse() {
+        ConnectionManager.volleyJSONRequest(this, true, null, url, Request.Method.GET, jsonParams, headers, new VolleyResponse() {
             @Override
             public void onResponse(String response) {
+                JSONArray array = new JSONArray();
                 try {
+                    final HashMap<String, String> bashos = new HashMap<>();
                     JSONObject mainObject = new JSONObject(response);
-                    Intent myIntent = new Intent(MainActivity.this, EventActivity.class);
-                    myIntent.putExtra("auth_token", mainObject.getString("auth_token")); //Optional parameters
-                    MainActivity.this.startActivity(myIntent);
+                    array = mainObject.getJSONArray("bashos");
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject row = array.getJSONObject(i);
 
+                        String code = row.getString("場所コード");
+                        String name = row.getString("場所名");
+                        bashos.put(name, code);
+                    }
+                    for(HashMap.Entry<String, String> basho : bashos.entrySet()){
+                        textView.append(basho.getKey() + "," + basho.getValue() + "\n");
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -103,4 +106,5 @@ public class MainActivity extends AppCompatActivity {
     private void alert(String message){
         Toast.makeText(getBaseContext(),  message, Toast.LENGTH_LONG).show();
     }
+
 }
