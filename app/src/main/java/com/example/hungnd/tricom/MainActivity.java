@@ -21,7 +21,7 @@ import io.gloxey.gnm.interfaces.VolleyResponse;
 import io.gloxey.gnm.managers.ConnectionManager;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String HOST = "http://192.168.10.184:3000";//"http://103.63.109.157";
+    public static final String HOST = "http://103.63.109.157";
     public static final String LOGIN_POST = HOST + "/login";
     Button btn;
     EditText username, password;

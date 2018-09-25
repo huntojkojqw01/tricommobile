@@ -269,7 +269,7 @@ public class EventActivity extends AppCompatActivity {
                     JSONArray errors = mainObject.getJSONArray("errors");
                     String str = "";
                     for(int i = 0; i < errors.length(); i++)
-                        str += errors.getString(i);
+                        str += errors.getString(i) + "\n";
                     alert(str);
                 } catch (JSONException e) {
                     e.printStackTrace();
